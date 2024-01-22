@@ -1,0 +1,24 @@
+{
+    "manifest_version": 2,
+    "name": "Hello World Example",
+    "description": "A basic Hello World example extension!",
+    "version": "1.0",
+    "author": "beardy_dev",
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "helloworld@yoursite.com",
+            "strict_min_version": "78.0"
+        }
+    },
+    "browser_action": {
+        "default_popup": "mainPopup/popup.html",
+        "default_title": "Hello World"
+    },
+    "permissions": [
+        "messagesRead",
+        "messagesMove",
+        "accountsRead",
+        "accountsFolders",
+        "messagesTags"
+    ]
+}
