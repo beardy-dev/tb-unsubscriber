@@ -1,0 +1,27 @@
+{
+    "manifest_version": 2,
+    "name": "tb-unsubscriber",
+    "description": "A Thunderbird extension to track, tag, move, and unsubscribe from mailing lists.",
+    "version": "1.0",
+    "author": "beardy-dev",
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "tb-unsubscriber@beardy-dev.lol",
+            "strict_min_version": "78.0"
+        }
+    },
+    "browser_action": {
+        "default_popup": "mainPopup/popup.html",
+        "default_title": "Hello World"
+    },
+    "background": {
+        "page" : "background/background.html"
+    },
+    "permissions": [
+        "messagesRead",
+        "messagesMove",
+        "accountsRead",
+        "accountsFolders",
+        "messagesTags"
+    ]
+}
