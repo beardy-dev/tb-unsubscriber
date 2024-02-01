@@ -4,12 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf ./dist && rollup --config"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "rollup": "^4.9.6"
+    "@rollup/plugin-json": "^6.1.0",
+    "@web/rollup-plugin-html": "^2.1.2",
+    "rollup": "^4.9.6",
+    "rollup-plugin-copy-assets": "^2.0.3"
   }
 }

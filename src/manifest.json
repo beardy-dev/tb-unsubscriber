@@ -22,6 +22,7 @@
         "messagesMove",
         "accountsRead",
         "accountsFolders",
-        "messagesTags"
+        "messagesTags",
+        "storage"
     ]
 }

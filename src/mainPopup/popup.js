@@ -1,27 +1,23 @@
+let globalAuthorMap = new Map();
+
 async function main() {
     const accountList = await messenger.accounts.list();
     const tags = await messenger.messages.listTags();
-
-    console.log(tags);
 
     if (!tags.find(tag => tag.key === 'test')) {
         await messenger.messages.createTag('test', 'test', '#ffa500');
     }
 
-    // messenger.messages.list(accountList[0].folders[0]).then(page => processPageMessages(page, accountList[0]));
-
     for (const account of accountList) {
-        console.groupCollapsed(account);
-        await messenger.messages.list(account.folders[0]).then(page => processPageMessages(page, account));
-        console.groupEnd();
-
+        messenger.messages.list(account.folders[0])
+        .then(page => processPageMessages(page, account))
+        .catch(err => console.error("Some shit went wrong...",err));
     }
 }
 
 async function processPageMessages(page, account) {
-    console.group('processPageMessages: ', page.id, account.name);
     for (const message of page.messages) {
-
+        let messageAuthor = await messenger.messages.get(message.id);
         let isSubscription = await messenger.messages.getFull(message.id).then(fullMessage => {
             const messageParts = fullMessage.parts[0];
             if (messageParts) {
@@ -30,20 +26,24 @@ async function processPageMessages(page, account) {
                 }
             }
         });
-
         if(isSubscription) {
-            console.log('can unsubscribe: ', message.id, message.date.toISOString(), message.author);
+            // let authorCounts = await messenger.storage.local.get({authorCounts: {}});
+            let authorCounts = new Map();
+            if(authorCounts && authorCounts.get(messageAuthor)){
+                let temp = authorCounts.get(messageAuthor) + 1;
+                authorCounts.set(messageAuthor, temp);
+            } else {
+                authorCounts.set(messageAuthor, 1);
+            }
+            console.log('authorCounts: ', authorCounts);
+            await messenger.storage.local.set({authorCounts});
             await messenger.messages.update(message.id, {tags: ['test']});
         }
     }
     if (!page.id) {
-        console.log('returning...',account.name);
-        console.groupEnd();
         return;
     }
-    console.log('continueList......');
     await messenger.messages.continueList(page.id).then(page => processPageMessages(page, account));
-    console.groupEnd();
     return;
 }
 
@@ -68,6 +68,6 @@ function hasUnsubscribeLink(textHtml) {
     return false;
 }
 
-await main();
-console.log('Done!');
+console.log('check them emails...');
+main();
 
