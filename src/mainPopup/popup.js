@@ -1,23 +1,35 @@
-let globalAuthorMap = new Map();
+let messageStorage;;
 
 async function main() {
-    const accountList = await messenger.accounts.list();
+    messageStorage = await messenger.storage.local.get(messageStorage);
+    console.log('messageStorage init: ', messageStorage);
+    // const accountList = await messenger.accounts.list();
+    const gmail = await messenger.accounts.getDefault();
     const tags = await messenger.messages.listTags();
 
     if (!tags.find(tag => tag.key === 'test')) {
         await messenger.messages.createTag('test', 'test', '#ffa500');
     }
 
-    for (const account of accountList) {
-        messenger.messages.list(account.folders[0])
-        .then(page => processPageMessages(page, account))
-        .catch(err => console.error("Some shit went wrong...",err));
-    }
+    await messenger.messages.list(gmail.folders[0])
+    .then(page => processPageMessages(page, gmail))
+    .catch(err => console.error("Some shit went wrong...",err));
+
+    console.log('messageStorage Final: ', messageStorage);
+    await messenger.storage.local.set(messageStorage);
+    console.log(await messenger.storage.local.get(messageStorage));
+
+    // for (const account of accountList) {
+    //     console.log('working with account: ', account.name, account.id);
+    //     messenger.messages.list(account.folders[0])
+    //     .then(page => processPageMessages(page, account))
+    //     .catch(err => console.error("Some shit went wrong...",err));
+    // }
 }
 
 async function processPageMessages(page, account) {
     for (const message of page.messages) {
-        let messageAuthor = await messenger.messages.get(message.id);
+        let messageHeader = await messenger.messages.get(message.id);
         let isSubscription = await messenger.messages.getFull(message.id).then(fullMessage => {
             const messageParts = fullMessage.parts[0];
             if (messageParts) {
@@ -27,16 +39,13 @@ async function processPageMessages(page, account) {
             }
         });
         if(isSubscription) {
-            // let authorCounts = await messenger.storage.local.get({authorCounts: {}});
-            let authorCounts = new Map();
-            if(authorCounts && authorCounts.get(messageAuthor)){
-                let temp = authorCounts.get(messageAuthor) + 1;
-                authorCounts.set(messageAuthor, temp);
-            } else {
-                authorCounts.set(messageAuthor, 1);
+            if(messageHeader.author) {
+                if(messageHeader.author in messageStorage) {
+                    messageStorage[messageHeader.author].add(messageHeader.id);
+                } else {
+                    messageStorage[messageHeader.author] = new Set();
+                }
             }
-            console.log('authorCounts: ', authorCounts);
-            await messenger.storage.local.set({authorCounts});
             await messenger.messages.update(message.id, {tags: ['test']});
         }
     }
@@ -46,8 +55,6 @@ async function processPageMessages(page, account) {
     await messenger.messages.continueList(page.id).then(page => processPageMessages(page, account));
     return;
 }
-
-
 
 function diveMessageParts(messageParts) {
     if (messageParts.body) {
@@ -68,6 +75,20 @@ function hasUnsubscribeLink(textHtml) {
     return false;
 }
 
-console.log('check them emails...');
-main();
 
+function debug_ClearLocalStorage() {
+    messenger.storage.local.clear();
+    console.log('cleared that shit');
+}
+
+const clearStorageBtn = document.getElementById('clearStorageBtn');
+clearStorageBtn.addEventListener('click', async() => {
+    console.log('Button Clicked');
+    debug_ClearLocalStorage();
+})
+
+const detectSubsBtn = document.getElementById('detectSubsBtn');
+detectSubsBtn.addEventListener('click', async() => {
+    console.log('tagging subs...');
+    main();
+});

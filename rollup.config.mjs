@@ -9,11 +9,17 @@ export default [
             dir: './dist/background',
             format: 'es',
         },
-        plugins:[html(), copy({
-            assets: [
-                '../manifest.json',
-            ]
-        })]
+        plugins:[
+            html(),
+            copy({
+                assets: ['../manifest.json',]
+            })
+        ],
+        watch: {
+            clearScreen: false,
+            include: 'src/**',
+            buildDelay: 1500,
+        }
     },
     {
         input: './src/mainPopup/popup.html',
@@ -21,6 +27,6 @@ export default [
             dir: './dist/mainPopup',
             format: 'es',
         },
-        plugins:[html()]
+        plugins:[html()],
     },
 ]
